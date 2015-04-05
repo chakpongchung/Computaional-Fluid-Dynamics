@@ -1,0 +1,255 @@
+typedef void (*func3arg) (double, double*, double*);
+typedef void (*func4arg) (double, double*, double*, double*);
+typedef void (*func6arg) (double, double*, double*, double*, double*, double* );
+
+void euler ( int neqn, double t0, double *x0, double h, func3arg f )
+
+/*
+     PURPOSE:
+          perform single time step of Euler's method to approximate 
+          the solution of an initial value problem (this routine works
+          for a single equation as well as for a system of equations)
+          
+
+     CALLING SEQUENCE:
+          euler ( neqn, t0, x0, h, f );
+
+     INPUTS:
+          neqn          number of equations in initial value problem
+                        whose solution is being approximated
+                        type:  int
+          t0		initial value for independent variable
+                        type:  double
+          x0		initial value for dependent variable
+                        type:  *double
+          h		length of time step
+                        type:  double
+          f             function of three arguments which defines the
+                        right-hand side of the differential equation;
+                        this function must be of the form
+                        
+                           void f ( double t, double *x, double *xp )
+                           {
+                              xp[0] = ...;
+                              xp[1] = ...;
+                              xp[2] = ...;
+                                    .
+                                    .
+                                    .
+                              xp[neqn-1] = ...;
+                           }
+                           
+                        where xp[i] is the value of the right-hand side
+                        of the i-th equaton in the system
+                        type:  func3arg
+
+
+     OUTPUT:
+          x0		approximation to solution of initial value 
+                        problem at t0+h
+                        type:  *double
+*/
+
+{
+     int i;
+     double *xp;
+
+     xp = new double [neqn];
+     
+     f(t0,x0,xp);
+     for ( i = 0; i < neqn; i++ )
+         x0[i] += h * xp[i];
+     
+     delete [] xp;
+}
+
+void opt_rk2 ( int neqn, double t0, double *x0, double h, func3arg f )
+
+/*
+     PURPOSE:
+          perform single time step of the optimal RK2 method to approximate 
+          the solution of an initial value problem (this routine works 
+          for a single equation as well as for a system of equations)
+          
+
+     CALLING SEQUENCE:
+          opt_rk2 ( neqn, t0, x0, h, f );
+
+     INPUTS:
+          neqn          number of equations in initial value problem
+                        whose solution is being approximated
+                        type:  int
+          t0		initial value for independent variable
+                        type:  double
+          x0		initial value for dependent variable
+                        type:  *double
+          h		length of time step
+                        type:  double
+          f             function of three arguments which defines the
+                        right-hand side of the differential equation;
+                        this function must be of the form
+                        
+                           void f ( double t, double *x, double *xp )
+                           {
+                              xp[0] = ...;
+                              xp[1] = ...;
+                              xp[2] = ...;
+                                    .
+                                    .
+                                    .
+                              xp[neqn-1] = ...;
+                           }
+                           
+                        where xp[i] is the value of the right-hand side
+                        of the i-th equaton in the system
+                        type:  func3arg
+
+
+     OUTPUT:
+          x0		approximation to solution of initial value 
+                        problem at t0+h
+                        type:  *double
+*/
+
+{
+     int i;
+     double *xp0, *xp1, *xtilde;
+
+     xp0 = new double [neqn];
+     xp1 = new double [neqn];
+     xtilde = new double [neqn];
+     
+     f(t0,x0,xp0);
+     for ( i = 0; i < neqn; i++ )
+         xtilde[i] = x0[i] + (2.0*h/3.0) * xp0[i];
+     
+     f(t0+2.0*h/3.0, xtilde, xp1);
+     for ( i = 0; i < neqn; i++ )
+         x0[i] += ( (h/4.0)*xp0[i] + (3.0*h/4.0)*xp1[i] );
+         
+     delete [] xp0;
+     delete [] xp1;
+     delete [] xtilde;
+}
+
+void ab2 ( int neqn, double t0, double *x0, double h, int *call_num,
+           double *work, func3arg f )
+
+/*
+     PURPOSE:
+          perform single time step of the two-step Adams-Bashforth method 
+          to approximate the solution of an initial value problem (this
+          routine works for a single equation as well as for a system 
+          of equations)
+          
+
+     CALLING SEQUENCE:
+          ab2 ( neqn, t0, x0, h, call_num, work, f );
+
+     INPUTS:
+          neqn          number of equations in initial value problem
+                        whose solution is being approximated
+                        type:  int
+          t0		initial value for independent variable
+                        type:  double
+          x0		initial value for dependent variable
+                        type:  *double
+          h		length of time step
+                        type:  double
+          call_num      for the first call to 'ab2' and whenever the
+                        value of h for the current time step is different
+                        from the value of h for the previous time step,
+                        set *call_num = 1
+                        type:  *int
+          work          array of length at least neqn; used for saving
+                        information needed for subsequent calls to 'ab2'
+                        type:  *double
+          f             function of three arguments which defines the
+                        right-hand side of the differential equation;
+                        this function must be of the form
+                        
+                           void f ( double t, double *x, double *xp )
+                           {
+                              xp[0] = ...;
+                              xp[1] = ...;
+                              xp[2] = ...;
+                                    .
+                                    .
+                                    .
+                              xp[neqn-1] = ...;
+                           }
+                           
+                        where xp[i] is the value of the right-hand side
+                        of the i-th equaton in the system
+                        type:  func3arg
+
+
+     OUTPUT:
+          x0		approximation to solution of initial value 
+                        problem at t0+h
+                        type:  *double
+          call_num      after each call to 'ab2', the value of this variable
+                        is incremented by 1; unless the value of h (the 
+                        length of the time step) changes from one time
+                        step to the next, the value of this variable should
+                        not be altered
+                        type:  *int
+          work          contains information needed for subsequent calls
+                        to 'ab2'; the contents of this array should not
+                        be altered
+                        type:  *double
+*/
+
+{
+     int i;
+     double *u, xtilde, fold, fnew;
+
+     if ( (*call_num) == 1 ) {
+/*
+   if this is the first call to 'ab2', or if the value of h has been
+   changed fom the value used during the previous time step
+   ...   then   ...
+   generate the approximation using the optimal RK2 method and save
+   the first function evaluation for the next call to 'ab2'
+*/
+
+        double *xp0, *xp1, *xtilde;
+        
+        xp0 = new double [neqn];
+        xp1 = new double [neqn];
+        xtilde = new double [neqn];
+     
+        f(t0,x0,xp0);
+        for ( i = 0; i < neqn; i++ ) {
+            xtilde[i] = x0[i] + (2.0*h/3.0) * xp0[i];
+            work[i] = xp0[i];
+        }
+     
+        f(t0+2.0*h/3.0, xtilde, xp1);
+        for ( i = 0; i < neqn; i++ )
+            x0[i] += ( (h/4.0)*xp0[i] + (3.0*h/4.0)*xp1[i] );
+         
+        delete [] xp0;
+        delete [] xp1;
+        delete [] xtilde;
+     }
+     else {
+
+/*
+   use the two-step Adams-Bashforth method 
+*/ 
+    
+        double *xp;
+        xp = new double [neqn];
+        
+        f(t0,x0,xp);
+        for ( i = 0; i < neqn; i++ ) {
+            x0[i] += h*( 1.5*xp[i] - 0.5*work[i] );
+            work[i] = xp[i];
+        }
+        
+        delete [] xp;
+     }
+     (*call_num)++;
+
+}

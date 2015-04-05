@@ -1,0 +1,13 @@
+set parametric
+set nohidden3d  
+
+set surface
+set nocontour
+set key 
+#
+plot "log.txt" using 1:2 w l title "log(error) versus log(h)"
+
+#
+pause -1 "Press return"
+
+

@@ -1,0 +1,15 @@
+set parametric
+set nohidden3d  
+
+set surface
+set nocontour
+set key 
+#
+plot "0.500000" using 2:3 w l title "0.500000",\
+     "0.250000" using 2:3 w l title "0.250000", \
+     "0.125000" using 2:3 w l title "0.125000", \
+     "0.062500" using 2:3 w l title "0.062500"
+#
+pause -1 "Press return"
+
+

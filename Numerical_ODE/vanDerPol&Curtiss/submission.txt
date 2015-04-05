@@ -1,0 +1,24 @@
+1st file
+function dy = curtiss(t,y)
+dy = -50*(y-cos(t));
+
+2nd file
+options = odeset('RelTol',1e-5,'AbsTol',1e-5);
+[T,Y] = ode45(@curtiss,[0 10],1,options);
+y=2500/2501*cos(T)+50/2501*sin(T)+1/2501 * exp(-50*T);
+plot(T,Y(:,1),'-',T(1:5:end),y(1:5:end),'o');
+
+
+
+
+1st file
+function dy = vanDerPol(t,y)
+dy = zeros(2,1);    % a column vector
+dy(1) = y(2);
+dy(2) = (1-y(1)*y(1))*y(2)-y(1);
+
+2nd file
+options = odeset('RelTol',1e-5,'AbsTol',[1e-5 1e-5]);
+[T,Y] = ode45(@vanDerPol,[0 25],[0.5,0.5],options);
+plot(T,Y(:,1),'-',T,Y(:,2),'-.')
+
